@@ -1,5 +1,5 @@
 from math import pi, sin, cos
-
+import cv2
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile
 from panda3d.core import DirectionalLight, AmbientLight
@@ -19,6 +19,8 @@ class MyGame(ShowBase):
 
         self.selectedBlockType = 'grass'
 
+
+
         self.loadModels()
         self.setupLights()
         self.generateTerrain()
@@ -27,7 +29,10 @@ class MyGame(ShowBase):
         self.captureMouse()
         self.setupControls()
 
-        taskMgr.add(self.update, 'update')
+        self.taskMgr.add(self.update, 'update')
+
+
+
 
     def update(self, task):
         dt = globalClock.getDt()
@@ -39,26 +44,26 @@ class MyGame(ShowBase):
         z_movement = 0
 
         if self.keyMap['forward']:
-            x_movement -= dt * playerMoveSpeed * sin(degToRad(camera.getH()))
-            y_movement += dt * playerMoveSpeed * cos(degToRad(camera.getH()))
+            x_movement -= dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
+            y_movement += dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
         if self.keyMap['backward']:
-            x_movement += dt * playerMoveSpeed * sin(degToRad(camera.getH()))
-            y_movement -= dt * playerMoveSpeed * cos(degToRad(camera.getH()))
+            x_movement += dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
+            y_movement -= dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
         if self.keyMap['left']:
-            x_movement -= dt * playerMoveSpeed * cos(degToRad(camera.getH()))
-            y_movement -= dt * playerMoveSpeed * sin(degToRad(camera.getH()))
+            x_movement -= dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
+            y_movement -= dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
         if self.keyMap['right']:
-            x_movement += dt * playerMoveSpeed * cos(degToRad(camera.getH()))
-            y_movement += dt * playerMoveSpeed * sin(degToRad(camera.getH()))
+            x_movement += dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
+            y_movement += dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
         if self.keyMap['up']:
             z_movement += dt * playerMoveSpeed
         if self.keyMap['down']:
             z_movement -= dt * playerMoveSpeed
 
-        camera.setPos(
-            camera.getX() + x_movement,
-            camera.getY() + y_movement,
-            camera.getZ() + z_movement,
+        self.camera.setPos(
+            self.camera.getX() + x_movement,
+            self.camera.getY() + y_movement,
+            self.camera.getZ() + z_movement,
         )
 
         if self.cameraSwingActivated:
@@ -180,7 +185,7 @@ class MyGame(ShowBase):
         self.camLens.setFov(80)
 
         crosshairs = OnscreenImage(
-            image = 'crosshairs.png',
+            image = 'assets/crosshairs.png',
             pos = (0, 0, 0),
             scale = 0.05,
         )
@@ -196,12 +201,12 @@ class MyGame(ShowBase):
         self.cTrav.addCollider(rayNodePath, self.rayQueue)
 
     def setupSkybox(self):
-        skybox = loader.loadModel('skybox/skybox.egg')
+        skybox = self.loader.loadModel('assets/skybox/skybox.egg')
         skybox.setScale(500)
         skybox.setBin('background', 1)
         skybox.setDepthWrite(0)
         skybox.setLightOff()
-        skybox.reparentTo(render)
+        skybox.reparentTo(self.render)
     
     def generateTerrain(self):
         for z in range(10):
@@ -216,7 +221,7 @@ class MyGame(ShowBase):
 
 
     def createNewBlock(self, x, y, z, type):
-        newBlockNode = render.attachNewNode('new-block-placeholder')
+        newBlockNode = self.render.attachNewNode('new-block-placeholder')
         newBlockNode.setPos(x, y, z)
 
         if type == 'grass':
@@ -235,21 +240,21 @@ class MyGame(ShowBase):
         collider.setPythonTag('owner', newBlockNode)
 
     def loadModels(self):
-        self.grassBlock = loader.loadModel('grass-block.glb')
-        self.dirtBlock = loader.loadModel('dirt-block.glb')
-        self.stoneBlock = loader.loadModel('stone-block.glb')
-        self.sandBlock = loader.loadModel('sand-block.glb')
+        self.grassBlock = self.loader.loadModel('assets/grass-block.glb')
+        self.dirtBlock = self.loader.loadModel('assets/dirt-block.glb')
+        self.stoneBlock = self.loader.loadModel('assets/stone-block.glb')
+        self.sandBlock = self.loader.loadModel('assets/sand-block.glb')
 
     def setupLights(self):
         mainLight = DirectionalLight('main light')
-        mainLightNodePath = render.attachNewNode(mainLight)
+        mainLightNodePath = self.render.attachNewNode(mainLight)
         mainLightNodePath.setHpr(30, -60, 0)
-        render.setLight(mainLightNodePath)
+        self.render.setLight(mainLightNodePath)
 
         ambientLight = AmbientLight('ambient light')
         ambientLight.setColor((0.3, 0.3, 0.3, 1))
-        ambientLightNodePath = render.attachNewNode(ambientLight)
-        render.setLight(ambientLightNodePath)
+        ambientLightNodePath = self.render.attachNewNode(ambientLight)
+        self.render.setLight(ambientLightNodePath)
     
 game = MyGame()
 game.run()
