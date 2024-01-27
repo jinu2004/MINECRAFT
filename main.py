@@ -8,6 +8,9 @@ from panda3d.core import WindowProperties
 from panda3d.core import CollisionTraverser, CollisionNode, CollisionBox, CollisionRay, CollisionHandlerQueue
 from direct.gui.OnscreenImage import OnscreenImage
 
+from FaceMesh import FaceMesh
+
+
 loadPrcFile('settings.prc')
 
 def degToRad(degrees):
@@ -18,8 +21,8 @@ class MyGame(ShowBase):
         ShowBase.__init__(self)
 
         self.selectedBlockType = 'grass'
-
-
+        self.cap = cv2.VideoCapture("Dance - 32938.mp4")
+        self.faceMesh = FaceMesh()
 
         self.loadModels()
         self.setupLights()
@@ -30,6 +33,7 @@ class MyGame(ShowBase):
         self.setupControls()
 
         self.taskMgr.add(self.update, 'update')
+        self.taskMgr.add(self.facedetect, 'faceMesh')
 
 
 
@@ -90,6 +94,14 @@ class MyGame(ShowBase):
 
         return task.cont
     
+
+    def facedetect(self,task):
+        ret,frame = self.cap.read()
+        self.faceMesh.FaceMeshDetector(frame)
+        return task.cont
+
+
+
     def setupControls(self):
         self.keyMap = {
             "forward": False,
@@ -258,3 +270,4 @@ class MyGame(ShowBase):
     
 game = MyGame()
 game.run()
+game.cap.release()

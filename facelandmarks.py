@@ -6,6 +6,7 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 from cvzone.FaceMeshModule import FaceMeshDetector
 from sympy import Point
@@ -51,12 +52,15 @@ def draw_landmarks_on_image(rgb_image, detection_result):
     
     for index, landmark in enumerate(face_landmarks_proto.landmark):
         height,width ,_ = rgb_image.shape
-        cx = (landmark.x * width)
-        cy =(landmark.y * height)
-        cz = (landmark.z * width)/100
+        cx = (landmark.x)
+        cy =(landmark.y)
+        cz = (landmark.z * width)
         facelist.append([index, cx, cy, cz])
 
-    cv2.circle(annotated_image,(int(facelist[8][1]),int(facelist[8][2])),4,(255,26,255),5)
+    cv2.circle(annotated_image,(int(facelist[468][1]*width),int(facelist[468][2]*height)),4,(255,26,255),5)
+    cv2.circle(annotated_image,(int(facelist[473][1]*width),int(facelist[473][2]*height)),4,(255,26,255),5)
+    cv2.circle(annotated_image,(int(facelist[152][1]*width),int(facelist[152][2]*height)),4,(255,26,255),5)
+    cv2.circle(annotated_image,(int(facelist[10][1]*width),int(facelist[10][2]*height)),4,(255,26,255),5)
 
 
 
@@ -64,7 +68,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
   return annotated_image,facelist
 
 
-# STEP 2: Create an FaceLandmarker object.
+
 base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        output_face_blendshapes=True,
@@ -73,14 +77,24 @@ options = vision.FaceLandmarkerOptions(base_options=base_options,
 detector = vision.FaceLandmarker.create_from_options(options)
 
 cap = cv2.VideoCapture("Dance - 32938.mp4")
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 200)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 200)
+
 
 while True:
     ret,img = cap.read()
+    
+
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
     face_landmarker_result = detector.detect(mp_image)
     annotated_image,facelist = draw_landmarks_on_image(img,face_landmarker_result)
 
-    print(facelist[6])
+    if (len(facelist)> 473):
+        xrotation = (facelist[473][1] - facelist[468][1])*180
+        yrotation = (facelist[152][2]-facelist[10][2])*180
+        print(xrotation,yrotation)
+
+
     cv2.imshow("hay",annotated_image)
 
 
