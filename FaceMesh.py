@@ -88,6 +88,7 @@ class FaceMesh():
             print(xrotation,yrotation)
 
         cv2.imshow("frame",self.annotated_image)
+        cv2.solvePnP()
 
 
 
