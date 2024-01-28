@@ -22,6 +22,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
   facelist = []
   face_3d = []
   face_2d = []
+  height,width ,_ = rgb_image.shape
 
   # Loop through the detected faces to visualize.
   for idx in range(len(face_landmarks_list)):
@@ -29,9 +30,36 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
     # Draw the face landmarks.
     face_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+    
     face_landmarks_proto.landmark.extend([landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in face_landmarks])
+    
+    solutions.drawing_utils.draw_landmarks(
+      image=annotated_image,
+      landmark_list=face_landmarks_proto,
+      connections=mp.solutions.face_mesh.FACEMESH_TESSELATION,
+      landmark_drawing_spec=None,
+      connection_drawing_spec=mp.solutions.drawing_styles
+      .get_default_face_mesh_tesselation_style())
+    solutions.drawing_utils.draw_landmarks(
+      image=annotated_image,
+      landmark_list=face_landmarks_proto,
+      connections=mp.solutions.face_mesh.FACEMESH_CONTOURS,
+      landmark_drawing_spec=None,
+      connection_drawing_spec=mp.solutions.drawing_styles
+      .get_default_face_mesh_contours_style())
+    solutions.drawing_utils.draw_landmarks(
+      image=annotated_image,
+      landmark_list=face_landmarks_proto,
+      connections=mp.solutions.face_mesh.FACEMESH_IRISES,
+        landmark_drawing_spec=None,
+        connection_drawing_spec=mp.solutions.drawing_styles
+        .get_default_face_mesh_iris_connections_style())
+      
+    
+    
+    
     for index, landmark in enumerate(face_landmarks_proto.landmark):
-        height,width ,_ = rgb_image.shape
+        
         cx = (landmark.x * width)
         cy =(landmark.y * height)
         cz = (landmark.z)
@@ -44,79 +72,57 @@ def draw_landmarks_on_image(rgb_image, detection_result):
           
           face_2d.append([x,y])
           face_3d.append([x,y,facelist[1][3]])
-            
-  face_2d = np.array(face_2d,dtype=np.float32)
+     
+     
 
-  face_3d = np.array(face_3d,dtype=np.float32)
 
-  #camera matrix
-  focal_length = 1*width
+    face_2d = np.array(face_2d,dtype=np.float32)
 
-  cam_matrix = np.array([ [focal_length, 0, width / 2],[0, focal_length, height / 2],[0, 0, 1]],dtype=np.float32)
-  # The distortion parameters
-  dist_matrix = np.zeros((4, 1), dtype=np.float32)
+    face_3d = np.array(face_3d,dtype=np.float32)
 
-# Solve PnP
-  success, rot_vec, trans_vec = cv2.solvePnP(face_3d, face_2d, cam_matrix, dist_matrix)
+    #camera matrix
+    focal_length = 1*width
 
-  # Get rotational matrix
-  rmat, jac = cv2.Rodrigues(rot_vec)
-  # Get angles
-  angles, mtxR, mtxQ, Qx, Qy, Qz = cv2.RQDecomp3x3(rmat)
-  # Get the y rotation degree
-  x = angles[0] * 360
-  y = angles[1] * 360
-  z = angles[2] * 360
-  
-  text = " "
-          # See where the user's head tilting
-  if y < -10:
-      text = "Looking Left"
-      print("Looking Left")
-  elif y > 10:
-      text = "Looking Right"
-      print("Looking Right")
-  elif x < -10:
-      text = "Looking Down"
-      print("Looking Down")
-  elif x > 10:
-      text = "Looking Up"
-      print("Looking Up")
-  else:
-      text = "Forward"
-      print("Forward")
-      
-      
-  # nose_3d_projection, jacobian = cv2.projectPoints(nose_3d, rot_vec, trans_vec, cam_matrix, dist_matrix)
-  p1 = (int(nose_2d[0]), int(nose_2d[1]))
-  p2 = (int(nose_2d[0] + y * 10) , int(nose_2d[1] - x * 10))
-  cv2.line(annotated_image, p1, p2, (255, 0, 0), 3)
+    cam_matrix = np.array([ [focal_length, 0, width / 2],[0, focal_length, height / 2],[0, 0, 1]],dtype=np.float32)
+    # The distortion parameters
+    dist_matrix = np.zeros((4, 1), dtype=np.float32)
+
+    # Solve PnP
+    success, rot_vec, trans_vec = cv2.solvePnP(face_3d, face_2d, cam_matrix, dist_matrix)
+
+    # Get rotational matrix
+    rmat, jac = cv2.Rodrigues(rot_vec)
+    # Get angles
+    angles, mtxR, mtxQ, Qx, Qy, Qz = cv2.RQDecomp3x3(rmat)
+    # Get the y rotation degree
+    x = angles[0] * 360
+    y = angles[1] * 360
+    z = angles[2] * 360
+    
+            # See where the user's head tilting
+    if y < -10:
+        text = "Looking Left"
+        print("Looking Left")
+    elif y > 10:
+        text = "Looking Right"
+        print("Looking Right")
+    elif x < -10:
+        text = "Looking Down"
+        print("Looking Down")
+    elif x > 10:
+        text = "Looking Up"
+        print("Looking Up")
+    else:
+        text = "Forward"
+        print("Forward")
+        
+        
+    # nose_3d_projection, jacobian = cv2.projectPoints(nose_3d, rot_vec, trans_vec, cam_matrix, dist_matrix)
+    p1 = (int(nose_2d[0]), int(nose_2d[1]))
+    p2 = (int(nose_2d[0] + y * 150) , int(nose_2d[1] - x * 150))
+    cv2.line(annotated_image, p1, p2, (255, 0, 0), 3)
       
     
-
-
-  solutions.drawing_utils.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks_proto,
-      connections=mp.solutions.face_mesh.FACEMESH_TESSELATION,
-      landmark_drawing_spec=None,
-      connection_drawing_spec=mp.solutions.drawing_styles
-      .get_default_face_mesh_tesselation_style())
-  solutions.drawing_utils.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks_proto,
-      connections=mp.solutions.face_mesh.FACEMESH_CONTOURS,
-      landmark_drawing_spec=None,
-      connection_drawing_spec=mp.solutions.drawing_styles
-      .get_default_face_mesh_contours_style())
-  solutions.drawing_utils.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks_proto,
-      connections=mp.solutions.face_mesh.FACEMESH_IRISES,
-        landmark_drawing_spec=None,
-        connection_drawing_spec=mp.solutions.drawing_styles
-        .get_default_face_mesh_iris_connections_style())
-      
           
 
   return annotated_image,facelist
@@ -131,7 +137,7 @@ options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
 
-cap = cv2.VideoCapture("man_-_61299 (1080p).mp4")
+cap = cv2.VideoCapture("Dance - 32938.mp4")
 
 while True:
     ret,img = cap.read()
