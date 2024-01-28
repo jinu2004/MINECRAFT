@@ -146,7 +146,7 @@ options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
 
-cap = cv2.VideoCapture("pexels-pnw-production-9218082 (1080p).mp4")
+cap = cv2.VideoCapture("pexels-anna-pou-8114961 (2160p).mp4")
 
 while True:
     ret,img = cap.read()

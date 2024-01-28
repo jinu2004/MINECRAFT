@@ -125,13 +125,12 @@ class FaceMesh():
         totalTime = end - start
 
         fps = 1 / totalTime
-        print("FPS: ", fps)
         self.image = cv2.resize(self.image,(600,500))
 
         cv2.putText(self.image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow("window",self.image)
         
-        return self.x *10,self.y*10,self.z*10
+        return self.x *10, self.y*10, self.z
 
 
         

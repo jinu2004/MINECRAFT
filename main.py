@@ -76,7 +76,7 @@ class MyGame(ShowBase):
         # if self.cameraSwingActivated:
         #     md = self.win.getPointer(0)
         #     x,y,z = self.faceMesh.FaceDetector(self.cap)
-        #     axis = LVecBase3f(x,y,z)
+            
         #     mouseX = x
         #     mouseY = y
 
@@ -88,16 +88,12 @@ class MyGame(ShowBase):
         #     currentH = self.camera.getH()
         #     currentP = self.camera.getP()
 
-        #     # self.camera.setHpr(
-        #     #     currentH - mouseChangeX * dt * self.cameraSwingFactor,
-        #     #     min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
-        #     #     0
-        #     # )
-        #     # self.camera.setHpr(
-        #     #     mouseX* self.cameraSwingFactor,
-        #     #     mouseY* self.cameraSwingFactor,
-        #     #     0
-        #     # )
+        #     self.camera.setHpr(
+        #         currentH - mouseChangeX * dt,
+        #         currentP - mouseChangeY * dt ,0
+        #     )
+        #     axis = LVecBase3f(currentH - y, currentP - y,z)
+        #     # self.camera.setHpr(axis)
             
             
 
