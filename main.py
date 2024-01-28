@@ -83,11 +83,13 @@ class MyGame(ShowBase):
             currentH = self.camera.getH()
             currentP = self.camera.getP()
 
-            self.camera.setHpr(
-                currentH - mouseChangeX * dt * self.cameraSwingFactor,
-                min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
-                0
-            )
+            # self.camera.setHpr(
+            #     currentH - mouseChangeX * dt * self.cameraSwingFactor,
+            #     min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
+            #     0
+            # )
+            
+            # self.camera.setHpr(self.x,self.y,self.z)
 
             self.lastMouseX = mouseX
             self.lastMouseY = mouseY
@@ -96,7 +98,8 @@ class MyGame(ShowBase):
     
 
     def facedetect(self,task):
-        self.faceMesh.FaceDetector(self.cap)
+        x,y,z = self.faceMesh.FaceDetector(self.cap)
+        self.camera.setHpr(x,y,z)
         return task.cont
 
 
