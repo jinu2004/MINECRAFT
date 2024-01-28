@@ -23,7 +23,7 @@ class MyGame(ShowBase):
         ShowBase.__init__(self)
 
         self.selectedBlockType = 'grass'
-        self.cap = cv2.VideoCapture("Dance - 32938.mp4")
+        self.cap = cv2.VideoCapture("pexels-pnw-production-9218082 (1080p).mp4")
 
         self.faceMesh = FaceMesh()
 
@@ -73,36 +73,43 @@ class MyGame(ShowBase):
             self.camera.getZ() + z_movement,
         )
 
-        if self.cameraSwingActivated:
-            md = self.win.getPointer(0)
-            mouseX = md.getX()
-            mouseY = md.getY()
+        # if self.cameraSwingActivated:
+        #     md = self.win.getPointer(0)
+        #     x,y,z = self.faceMesh.FaceDetector(self.cap)
+        #     axis = LVecBase3f(x,y,z)
+        #     mouseX = x
+        #     mouseY = y
 
-            mouseChangeX = mouseX - self.lastMouseX
-            mouseChangeY = mouseY - self.lastMouseY
+        #     mouseChangeX = mouseX - self.lastMouseX
+        #     mouseChangeY = mouseY - self.lastMouseY
 
-            self.cameraSwingFactor = 10
+        #     self.cameraSwingFactor = 2
 
-            currentH = self.camera.getH()
-            currentP = self.camera.getP()
+        #     currentH = self.camera.getH()
+        #     currentP = self.camera.getP()
 
-            # self.camera.setHpr(
-            #     currentH - mouseChangeX * dt * self.cameraSwingFactor,
-            #     min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
-            #     0
-            # )
+        #     # self.camera.setHpr(
+        #     #     currentH - mouseChangeX * dt * self.cameraSwingFactor,
+        #     #     min(90, max(-90, currentP - mouseChangeY * dt * self.cameraSwingFactor)),
+        #     #     0
+        #     # )
+        #     # self.camera.setHpr(
+        #     #     mouseX* self.cameraSwingFactor,
+        #     #     mouseY* self.cameraSwingFactor,
+        #     #     0
+        #     # )
             
-            # self.camera.setHpr(self.x,self.y,self.z)
+            
 
-            self.lastMouseX = mouseX
-            self.lastMouseY = mouseY
+        #     self.lastMouseX = mouseX
+        #     self.lastMouseY = mouseY
 
         return task.cont
     
 
     def facedetect(self,task):
         x,y,z = self.faceMesh.FaceDetector(self.cap)
-        axis = LVecBase3f(x,y,z)
+        axis = LVecBase3f(y,x,z)
         self.camera.setHpr(axis)
         return task.cont
 

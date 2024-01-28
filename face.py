@@ -2,6 +2,8 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
@@ -12,6 +14,27 @@ drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 
 
 cap = cv2.VideoCapture("Dance - 32938.mp4")
+
+def plot_face_blendshapes_bar_graph(face_blendshapes):
+  # Extract the face blendshapes category names and scores.
+  face_blendshapes_names = [face_blendshapes_category.category_name for face_blendshapes_category in face_blendshapes]
+  face_blendshapes_scores = [face_blendshapes_category.score for face_blendshapes_category in face_blendshapes]
+  # The blendshapes are ordered in decreasing score value.
+  face_blendshapes_ranks = range(len(face_blendshapes_names))
+
+  fig, ax = plt.subplots(figsize=(12, 12))
+  bar = ax.barh(face_blendshapes_ranks, face_blendshapes_scores, label=[str(x) for x in face_blendshapes_ranks])
+  ax.set_yticks(face_blendshapes_ranks, face_blendshapes_names)
+  ax.invert_yaxis()
+
+  # Label each bar with values
+  for score, patch in zip(face_blendshapes_scores, bar.patches):
+    plt.text(patch.get_x() + patch.get_width(), patch.get_y(), f"{score:.4f}", va="top")
+
+  ax.set_xlabel('Score')
+  ax.set_title("Face Blendshapes")
+  plt.tight_layout()
+  plt.show()
 
 while cap.isOpened():
     success, image = cap.read()
@@ -134,8 +157,9 @@ while cap.isOpened():
                     connection_drawing_spec=mp.solutions.drawing_styles
                     .get_default_face_mesh_tesselation_style())
 
-
+    plot_face_blendshapes_bar_graph(results.face_blendshapes)
     cv2.imshow('Head Pose Estimation', image)
+
 
     key = cv2.waitKey(1)
     if key == ord('q'):
