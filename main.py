@@ -96,8 +96,7 @@ class MyGame(ShowBase):
     
 
     def facedetect(self,task):
-        ret,frame = self.cap.read()
-        self.faceMesh.FaceMeshDetector(frame)
+        self.faceMesh.FaceDetector(self.cap)
         return task.cont
 
 

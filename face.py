@@ -1,6 +1,5 @@
 import cv2
 import mediapipe as mp
-from mediapipe.python.solutions import face_mesh
 import numpy as np
 import time
 
