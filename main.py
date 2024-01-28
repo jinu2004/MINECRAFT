@@ -6,6 +6,7 @@ from panda3d.core import DirectionalLight, AmbientLight
 from panda3d.core import TransparencyAttrib
 from panda3d.core import WindowProperties
 from panda3d.core import CollisionTraverser, CollisionNode, CollisionBox, CollisionRay, CollisionHandlerQueue
+from panda3d.core import LVecBase3f
 from direct.gui.OnscreenImage import OnscreenImage
 
 from FaceMesh import FaceMesh
@@ -101,7 +102,8 @@ class MyGame(ShowBase):
 
     def facedetect(self,task):
         x,y,z = self.faceMesh.FaceDetector(self.cap)
-        self.camera.setHpr(x,y,z)
+        axis = LVecBase3f(x,y,z)
+        self.camera.setHpr(axis)
         return task.cont
 
 
