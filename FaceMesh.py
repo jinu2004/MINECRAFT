@@ -18,7 +18,7 @@ class FaceMesh():
         self.image.flags.writeable = False
         results = self.face_mesh.process(self.image)
         self.image.flags.writeable = True
-        self.image = cv2.resize(self.image,(650,400))
+        # self.image = cv2.resize(self.image,(650,400))
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         img_h, img_w, img_c = self.image.shape
         face_3d = []
@@ -118,6 +118,7 @@ class FaceMesh():
                         landmark_drawing_spec=None,
                         connection_drawing_spec=mp.solutions.drawing_styles
                         .get_default_face_mesh_tesselation_style())
+
 
             cv2.imshow('Head Pose Estimation', self.image)
             
