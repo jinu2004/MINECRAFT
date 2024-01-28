@@ -18,6 +18,7 @@ class FaceMesh():
         self.image.flags.writeable = False
         results = self.face_mesh.process(self.image)
         self.image.flags.writeable = True
+        self.image = cv2.resize(self.image,(650,400))
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         img_h, img_w, img_c = self.image.shape
         face_3d = []

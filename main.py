@@ -21,7 +21,7 @@ class MyGame(ShowBase):
         ShowBase.__init__(self)
 
         self.selectedBlockType = 'grass'
-        self.cap = cv2.VideoCapture("Dance - 32938.mp4")
+        self.cap = cv2.VideoCapture("Work - 87593.mp4")
         self.faceMesh = FaceMesh()
 
         self.loadModels()
