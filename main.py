@@ -28,7 +28,7 @@ def degToRad(degrees):
 class MyGame(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-
+#check line 83 if the rotation is not good
         self.selectedBlockType = "grass"
         self.cap = cv2.VideoCapture(0)
 
