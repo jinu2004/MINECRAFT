@@ -18,6 +18,9 @@ class FaceMesh():
 
         
     def FaceDetector(self,cap):
+        x = 0
+        y = 0
+        z = 0
         success, self.image = cap.read()
         start = time.time()
         self.image = cv2.cvtColor(cv2.flip(self.image, 1), cv2.COLOR_BGR2RGB)
@@ -55,13 +58,13 @@ class FaceMesh():
                         nose_2d = (lm.x * img_w, lm.y * img_h)
                         nose_3d = (lm.x * img_w, lm.y * img_h, lm.z * 3000)
 
-                    x, y = int(lm.x * img_w), int(lm.y * img_h)
+                    tx, ty = int(lm.x * img_w), int(lm.y * img_h)
 
                     # Get the 2D Coordinates
-                    face_2d.append([x, y])
+                    face_2d.append([tx, ty])
 
                     # Get the 3D Coordinates
-                    face_3d.append([x, y, lm.z])       
+                    face_3d.append([tx, ty, lm.z])       
 
         # Convert it to the NumPy array
             face_2d = np.array(face_2d, dtype=np.float64)
@@ -89,9 +92,9 @@ class FaceMesh():
             angles, mtxR, mtxQ, Qx, Qy, Qz = cv2.RQDecomp3x3(rmat)
 
             # Get the y rotation degree
-            self.x = angles[0] * 360
-            self.y = angles[1] * 360
-            self.z = angles[2] * 360
+            x = angles[0] * 360
+            y = angles[1] * 360
+            z = angles[2] * 360
 
 
             # See where the user's head tilting
@@ -110,15 +113,15 @@ class FaceMesh():
             nose_3d_projection, jacobian = cv2.projectPoints(nose_3d, rot_vec, trans_vec, cam_matrix, dist_matrix)
 
             p1 = (int(nose_2d[0]), int(nose_2d[1]))
-            p2 = (int(nose_2d[0] + self.y * 10) , int(nose_2d[1] - self.x * 10))
+            p2 = (int(nose_2d[0] + y * 10) , int(nose_2d[1] - x * 10))
             
             cv2.line(self.image, p1, p2, (255, 0, 0), 3)
 
             # Add the text on the image
             cv2.putText(self.image, text, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)
-            cv2.putText(self.image, "x: " + str(np.round(self.x,2)), (500, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.putText(self.image, "y: " + str(np.round(self.y,2)), (500, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.putText(self.image, "z: " + str(np.round(self.z,2)), (500, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(self.image, "x: " + str(np.round(x,2)), (500, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(self.image, "y: " + str(np.round(y,2)), (500, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(self.image, "z: " + str(np.round(z,2)), (500, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
 
         end = time.time()
@@ -130,7 +133,7 @@ class FaceMesh():
         cv2.putText(self.image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow("window",self.image)
         
-        return self.x *10, self.y*10, self.z
+        return x *10, y*10, z
 
 
         

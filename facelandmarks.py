@@ -43,8 +43,8 @@ def draw_landmarks_on_image(rgb_image, detection_result):
     
     if(face_landmarks_proto.landmark):
       for idx, lm in enumerate(face_landmarks_proto.landmark):
-          if idx == 33 or idx == 263 or idx == 1 or idx == 61 or idx == 291 or idx == 199:
-              if idx == 1:
+          if idx == 33 or idx == 263 or idx == 9 or idx == 61 or idx == 291 or idx == 199:
+              if idx == 9:
                   nose_2d = (lm.x * img_w, lm.y * img_h)
                   nose_3d = (lm.x * img_w, lm.y * img_h, lm.z * 3000)
 
@@ -119,7 +119,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
   # fps = 1 / totalTime
   # #print("FPS: ", fps)
-  image = cv2.resize(image,(500,500))
+  # image = cv2.resize(image,(500,500))
 
   # cv2.putText(image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
   cv2.imshow("window",image)
@@ -146,12 +146,15 @@ options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
 
-cap = cv2.VideoCapture("pexels-anna-pou-8114961 (2160p).mp4")
+cap = cv2.VideoCapture(0)
 
 while True:
     ret,img = cap.read()
+    img = cv2.flip(img,1)
+    img = cv2.resize(img,(1000,800))
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
     face_landmarker_result = detector.detect(mp_image)
+    
     if(face_landmarker_result):
       draw_landmarks_on_image(img,face_landmarker_result)
       if face_landmarker_result.face_blendshapes:

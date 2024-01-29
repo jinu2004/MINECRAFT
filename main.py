@@ -23,7 +23,9 @@ class MyGame(ShowBase):
         ShowBase.__init__(self)
 
         self.selectedBlockType = 'grass'
-        self.cap = cv2.VideoCapture("pexels-pnw-production-9218082 (1080p).mp4")
+        self.cap = cv2.VideoCapture(0)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1000)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1000)
 
         self.faceMesh = FaceMesh()
 
