@@ -133,7 +133,7 @@ class FaceMesh():
         cv2.putText(self.image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow("window",self.image)
         
-        return x *10, y*10, z
+        return x*10, y*10, z
 
 
         
