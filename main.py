@@ -111,18 +111,17 @@ class MyGame(ShowBase):
         x,y,z = self.faceMesh.FaceDetector(self.cap)
         
         xAvL.append(x)
-        xAvL.append(y)
+        yAvL.append(y)
         
-        if(len(xAvL)>50):
+        if(len(xAvL)>200):
             xAvL = xAvL.pop(0)
-        if(len(yAvL)>50):
-           xAvL = yAvL.pop(0)
-           
-        xAv = sum(xAvL)/len(xAvL)
-        yAv = sum(yAvL)/len(yAvL)
-        axis = LVecBase3f(yAv,xAv,0)
-        self.camera.setHpr(axis)
-        print(xAv)
+        if(len(yAvL)>200):
+           yAvL = yAvL.pop(0)
+        if(xAvL and yAvL):   
+            xAv = sum(xAvL)/len(xAvL)
+            yAv = sum(yAvL)/len(yAvL)
+            axis = LVecBase3f(yAv,xAv,0)
+            self.camera.setHpr(axis)
             
         return task.cont
 

@@ -23,7 +23,7 @@ class FaceMesh():
         z = 0
         success, self.image = cap.read()
         start = time.time()
-        self.image = cv2.cvtColor(cv2.flip(self.image, 1), cv2.COLOR_BGR2RGB)
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
         self.image.flags.writeable = False
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=self.image)
         face_landmarker_result = self.detector.detect(mp_image)
@@ -133,7 +133,7 @@ class FaceMesh():
         cv2.putText(self.image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow("window",self.image)
         
-        return x*10, y*10, z
+        return x*3, y*3, z
 
 
         
