@@ -1,5 +1,6 @@
 from math import pi, sin, cos
 import cv2
+import time
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile
 from panda3d.core import DirectionalLight, AmbientLight
@@ -33,8 +34,9 @@ class MyGame(ShowBase):
         self.cap = cv2.VideoCapture(0)
 
         self.faceMesh = FaceMesh()
+        
         self.rotate_speed = 15
-        self.rotate_speedP = 5
+        self.rotate_speedP = 15
 
         self.loadModels()
         self.setupLights()
@@ -81,10 +83,7 @@ class MyGame(ShowBase):
         )
 
         x, y, z = self.faceMesh.getNosePose()
-        
         # mannully adjust the constants according to our camera quality and screen resolution
-        
-        
         if y < -2:
             text = "Looking Left"
             self.rotate_cameraH(direction=-1,dt=dt)
@@ -100,9 +99,31 @@ class MyGame(ShowBase):
         else:
             text = "Forward"       
         
+        face_landmarker_result = self.faceMesh.getFaceBlendShape()
+        if(face_landmarker_result):
+            for category in face_landmarker_result[0]:
+            # if (category.index == 9 and float(category.score) >= float(0.5)):
+            #   print(category)
+            # if (category.index == 10 and float(category.score) >= float(0.5)):
+            #   print(category)
+                last_execution_time_remove = 0
+                last_execution_time_place = 0
+                cooldown_period = 0.2
+                if (category.category_name == "browInnerUp" and float(category.score) >= float(0.7)):
+                    current_time = time.time()
+                    if current_time - last_execution_time_remove >= cooldown_period:
+                        self.removeBlock()
+                        print(category)
+                        last_execution_time_remove = current_time
+                if (category.category_name == "mouthPucker" and float(category.score) >= float(0.95)):
+                    current_time = time.time()
+                    if current_time - last_execution_time_place >= cooldown_period:
+                        self.placeBlock()
+                        print(category)
+                        last_execution_time_place= current_time
+            
         
         
-
         return task.cont
 
     def rotate_cameraH(self, direction, dt):

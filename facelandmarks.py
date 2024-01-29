@@ -119,18 +119,18 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
   # fps = 1 / totalTime
   # #print("FPS: ", fps)
-  # image = cv2.resize(image,(500,500))
+  image = cv2.resize(image,(500,500))
 
   # cv2.putText(image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
   cv2.imshow("window",image)
 
 def plot_face_blendshapes_bar_graph(face_blendshapes):
         for category in face_blendshapes:
-          if (category.index == 9 and float(category.score) >= float(0.5)):
-            print(category)
-          if (category.index == 10 and float(category.score) >= float(0.5)):
-            print(category)
-          if (category.category_name == "e" and float(category.score) >= float(0.5)):
+          # if (category.index == 9 and float(category.score) >= float(0.5)):
+          #   print(category)
+          # if (category.index == 10 and float(category.score) >= float(0.5)):
+          #   print(category)
+          if (category.category_name == "mouthFunnel" and float(category.score) >= float(0.4)):
             print(category)
 
       
