@@ -88,13 +88,13 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
 
     # See where the user's head tilting
-    if y < -10:
+    if y < -2:
         text = "Looking Left"
-    elif y > 10:
+    elif y > 2:
         text = "Looking Right"
-    elif x < -10:
+    elif x < -2:
         text = "Looking Down"
-    elif x > 10:
+    elif x > 2:
         text = "Looking Up"
     else:
         text = "Forward"
@@ -130,6 +130,8 @@ def plot_face_blendshapes_bar_graph(face_blendshapes):
             print(category)
           if (category.index == 10 and float(category.score) >= float(0.5)):
             print(category)
+          if (category.category_name == "e" and float(category.score) >= float(0.5)):
+            print(category)
 
       
         
@@ -151,7 +153,7 @@ cap = cv2.VideoCapture(0)
 while True:
     ret,img = cap.read()
     img = cv2.flip(img,1)
-    img = cv2.resize(img,(1000,800))
+    img = cv2.resize(img,(1900,1080))
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
     face_landmarker_result = detector.detect(mp_image)
     

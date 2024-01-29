@@ -5,29 +5,36 @@ from panda3d.core import loadPrcFile
 from panda3d.core import DirectionalLight, AmbientLight
 from panda3d.core import TransparencyAttrib
 from panda3d.core import WindowProperties
-from panda3d.core import CollisionTraverser, CollisionNode, CollisionBox, CollisionRay, CollisionHandlerQueue
+from panda3d.core import (
+    CollisionTraverser,
+    CollisionNode,
+    CollisionBox,
+    CollisionRay,
+    CollisionHandlerQueue,
+)
 from panda3d.core import LVecBase3f
 from direct.gui.OnscreenImage import OnscreenImage
 
 from FaceMesh import FaceMesh
 
 
-loadPrcFile('settings.prc')
+loadPrcFile("settings.prc")
 
 
 def degToRad(degrees):
     return degrees * (pi / 180.0)
 
+
 class MyGame(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
-        self.selectedBlockType = 'grass'
+        self.selectedBlockType = "grass"
         self.cap = cv2.VideoCapture(0)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1000)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1000)
 
         self.faceMesh = FaceMesh()
+        self.rotate_speed = 15
+        self.rotate_speedP = 5
 
         self.loadModels()
         self.setupLights()
@@ -37,11 +44,7 @@ class MyGame(ShowBase):
         self.captureMouse()
         self.setupControls()
 
-        self.taskMgr.add(self.update, 'update')
-        self.taskMgr.add(self.facedetect, 'faceMesh')
-
-
-
+        self.taskMgr.add(self.update, "update")
 
     def update(self, task):
         dt = globalClock.getDt()
@@ -52,21 +55,23 @@ class MyGame(ShowBase):
         y_movement = 0
         z_movement = 0
 
-        if self.keyMap['forward']:
+        self.faceMesh.FaceDetector(self.cap)
+
+        if self.keyMap["forward"]:
             x_movement -= dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
             y_movement += dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
-        if self.keyMap['backward']:
+        if self.keyMap["backward"]:
             x_movement += dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
             y_movement -= dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
-        if self.keyMap['left']:
+        if self.keyMap["left"]:
             x_movement -= dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
             y_movement -= dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
-        if self.keyMap['right']:
+        if self.keyMap["right"]:
             x_movement += dt * playerMoveSpeed * cos(degToRad(self.camera.getH()))
             y_movement += dt * playerMoveSpeed * sin(degToRad(self.camera.getH()))
-        if self.keyMap['up']:
+        if self.keyMap["up"]:
             z_movement += dt * playerMoveSpeed
-        if self.keyMap['down']:
+        if self.keyMap["down"]:
             z_movement -= dt * playerMoveSpeed
 
         self.camera.setPos(
@@ -75,57 +80,38 @@ class MyGame(ShowBase):
             self.camera.getZ() + z_movement,
         )
 
-        # if self.cameraSwingActivated:
-        #     md = self.win.getPointer(0)
-        #     x,y,z = self.faceMesh.FaceDetector(self.cap)
-            
-        #     mouseX = x
-        #     mouseY = y
-
-        #     mouseChangeX = mouseX - self.lastMouseX
-        #     mouseChangeY = mouseY - self.lastMouseY
-
-        #     self.cameraSwingFactor = 2
-
-        #     currentH = self.camera.getH()
-        #     currentP = self.camera.getP()
-
-        #     self.camera.setHpr(
-        #         currentH - mouseChangeX * dt,
-        #         currentP - mouseChangeY * dt ,0
-        #     )
-        #     axis = LVecBase3f(currentH - y, currentP - y,z)
-        #     # self.camera.setHpr(axis)
-            
-            
-
-        #     self.lastMouseX = mouseX
-        #     self.lastMouseY = mouseY
+        x, y, z = self.faceMesh.getNosePose()
+        
+        # mannully adjust the constants according to our camera quality and screen resolution
+        
+        
+        if y < -2:
+            text = "Looking Left"
+            self.rotate_cameraH(direction=-1,dt=dt)
+        elif y > 2:
+            text = "Looking Right"
+            self.rotate_cameraH(direction=1,dt=dt)
+        elif x < -1.5:
+            text = "Looking Down"
+            self.rotate_cameraP(-1,dt)
+        elif x > 2.5:
+            text = "Looking Up"
+            self.rotate_cameraP(1,dt)
+        else:
+            text = "Forward"       
+        
+        
+        
 
         return task.cont
-    
 
-    def facedetect(self,task):
-        xAvL = []
-        yAvL = []
-        x,y,z = self.faceMesh.FaceDetector(self.cap)
+    def rotate_cameraH(self, direction, dt):
+        angle = direction * self.rotate_speed * dt
+        self.camera.setH(self.camera.getH() + angle)
         
-        xAvL.append(x)
-        yAvL.append(y)
-        
-        if(len(xAvL)>200):
-            xAvL = xAvL.pop(0)
-        if(len(yAvL)>200):
-           yAvL = yAvL.pop(0)
-        if(xAvL and yAvL):   
-            xAv = sum(xAvL)/len(xAvL)
-            yAv = sum(yAvL)/len(yAvL)
-            axis = LVecBase3f(yAv,xAv,0)
-            self.camera.setHpr(axis)
-            
-        return task.cont
-
-
+    def rotate_cameraP(self, direction, dt):
+        angle = direction * self.rotate_speedP * dt
+        self.camera.setP(self.camera.getP() + angle)
 
     def setupControls(self):
         self.keyMap = {
@@ -137,31 +123,31 @@ class MyGame(ShowBase):
             "down": False,
         }
 
-        self.accept('escape', self.releaseMouse)
-        self.accept('mouse1', self.handleLeftClick)
-        self.accept('mouse3', self.placeBlock)
+        self.accept("escape", self.releaseMouse)
+        self.accept("mouse1", self.handleLeftClick)
+        self.accept("mouse3", self.placeBlock)
 
-        self.accept('w', self.updateKeyMap, ['forward', True])
-        self.accept('w-up', self.updateKeyMap, ['forward', False])
-        self.accept('a', self.updateKeyMap, ['left', True])
-        self.accept('a-up', self.updateKeyMap, ['left', False])
-        self.accept('s', self.updateKeyMap, ['backward', True])
-        self.accept('s-up', self.updateKeyMap, ['backward', False])
-        self.accept('d', self.updateKeyMap, ['right', True])
-        self.accept('d-up', self.updateKeyMap, ['right', False])
-        self.accept('space', self.updateKeyMap, ['up', True])
-        self.accept('space-up', self.updateKeyMap, ['up', False])
-        self.accept('lshift', self.updateKeyMap, ['down', True])
-        self.accept('lshift-up', self.updateKeyMap, ['down', False])
+        self.accept("w", self.updateKeyMap, ["forward", True])
+        self.accept("w-up", self.updateKeyMap, ["forward", False])
+        self.accept("a", self.updateKeyMap, ["left", True])
+        self.accept("a-up", self.updateKeyMap, ["left", False])
+        self.accept("s", self.updateKeyMap, ["backward", True])
+        self.accept("s-up", self.updateKeyMap, ["backward", False])
+        self.accept("d", self.updateKeyMap, ["right", True])
+        self.accept("d-up", self.updateKeyMap, ["right", False])
+        self.accept("space", self.updateKeyMap, ["up", True])
+        self.accept("space-up", self.updateKeyMap, ["up", False])
+        self.accept("lshift", self.updateKeyMap, ["down", True])
+        self.accept("lshift-up", self.updateKeyMap, ["down", False])
 
-        self.accept('1', self.setSelectedBlockType, ['grass'])
-        self.accept('2', self.setSelectedBlockType, ['dirt'])
-        self.accept('3', self.setSelectedBlockType, ['sand'])
-        self.accept('4', self.setSelectedBlockType, ['stone'])
-    
+        self.accept("1", self.setSelectedBlockType, ["grass"])
+        self.accept("2", self.setSelectedBlockType, ["dirt"])
+        self.accept("3", self.setSelectedBlockType, ["sand"])
+        self.accept("4", self.setSelectedBlockType, ["stone"])
+
     def setSelectedBlockType(self, type):
         self.selectedBlockType = type
-    
+
     def handleLeftClick(self):
         self.captureMouse()
         self.removeBlock()
@@ -172,11 +158,11 @@ class MyGame(ShowBase):
             rayHit = self.rayQueue.getEntry(0)
 
             hitNodePath = rayHit.getIntoNodePath()
-            hitObject = hitNodePath.getPythonTag('owner')
+            hitObject = hitNodePath.getPythonTag("owner")
             distanceFromPlayer = hitObject.getDistance(self.camera)
 
             if distanceFromPlayer < 12:
-                hitNodePath.clearPythonTag('owner')
+                hitNodePath.clearPythonTag("owner")
                 hitObject.removeNode()
 
     def placeBlock(self):
@@ -185,14 +171,16 @@ class MyGame(ShowBase):
             rayHit = self.rayQueue.getEntry(0)
             hitNodePath = rayHit.getIntoNodePath()
             normal = rayHit.getSurfaceNormal(hitNodePath)
-            hitObject = hitNodePath.getPythonTag('owner')
+            hitObject = hitNodePath.getPythonTag("owner")
             distanceFromPlayer = hitObject.getDistance(self.camera)
 
             if distanceFromPlayer < 14:
                 hitBlockPos = hitObject.getPos()
                 newBlockPos = hitBlockPos + normal * 2
-                self.createNewBlock(newBlockPos.x, newBlockPos.y, newBlockPos.z, self.selectedBlockType)
-    
+                self.createNewBlock(
+                    newBlockPos.x, newBlockPos.y, newBlockPos.z, self.selectedBlockType
+                )
+
     def updateKeyMap(self, key, value):
         self.keyMap[key] = value
 
@@ -222,77 +210,74 @@ class MyGame(ShowBase):
         self.camLens.setFov(80)
 
         crosshairs = OnscreenImage(
-            image = 'assets/crosshairs.png',
-            pos = (0, 0, 0),
-            scale = 0.05,
+            image="assets/crosshairs.png",
+            pos=(0, 0, 0),
+            scale=0.05,
         )
         crosshairs.setTransparency(TransparencyAttrib.MAlpha)
 
         self.cTrav = CollisionTraverser()
         ray = CollisionRay()
         ray.setFromLens(self.camNode, (0, 0))
-        rayNode = CollisionNode('line-of-sight')
+        rayNode = CollisionNode("line-of-sight")
         rayNode.addSolid(ray)
         rayNodePath = self.camera.attachNewNode(rayNode)
         self.rayQueue = CollisionHandlerQueue()
         self.cTrav.addCollider(rayNodePath, self.rayQueue)
 
     def setupSkybox(self):
-        skybox = self.loader.loadModel('assets/skybox/skybox.egg')
+        skybox = self.loader.loadModel("assets/skybox/skybox.egg")
         skybox.setScale(500)
-        skybox.setBin('background', 1)
+        skybox.setBin("background", 1)
         skybox.setDepthWrite(0)
         skybox.setLightOff()
         skybox.reparentTo(self.render)
-    
+
     def generateTerrain(self):
         for z in range(10):
             for y in range(20):
                 for x in range(20):
                     self.createNewBlock(
-                        x * 2 - 20,
-                        y * 2 - 20,
-                        -z * 2,
-                        'grass' if z == 0 else 'dirt'
+                        x * 2 - 20, y * 2 - 20, -z * 2, "grass" if z == 0 else "dirt"
                     )
 
-
     def createNewBlock(self, x, y, z, type):
-        newBlockNode = self.render.attachNewNode('new-block-placeholder')
+        newBlockNode = self.render.attachNewNode("new-block-placeholder")
         newBlockNode.setPos(x, y, z)
 
-        if type == 'grass':
+        if type == "grass":
             self.grassBlock.instanceTo(newBlockNode)
-        elif type == 'dirt':
+        elif type == "dirt":
             self.dirtBlock.instanceTo(newBlockNode)
-        elif type == 'sand':
+        elif type == "sand":
             self.sandBlock.instanceTo(newBlockNode)
-        elif type == 'stone':
+        elif type == "stone":
             self.stoneBlock.instanceTo(newBlockNode)
 
         blockSolid = CollisionBox((-1, -1, -1), (1, 1, 1))
-        blockNode = CollisionNode('block-collision-node')
+        blockNode = CollisionNode("block-collision-node")
         blockNode.addSolid(blockSolid)
         collider = newBlockNode.attachNewNode(blockNode)
-        collider.setPythonTag('owner', newBlockNode)
+        collider.setPythonTag("owner", newBlockNode)
 
     def loadModels(self):
-        self.grassBlock = self.loader.loadModel('assets/grass-block.glb')
-        self.dirtBlock = self.loader.loadModel('assets/dirt-block.glb')
-        self.stoneBlock = self.loader.loadModel('assets/stone-block.glb')
-        self.sandBlock = self.loader.loadModel('assets/sand-block.glb')
+        self.grassBlock = self.loader.loadModel("assets/grass-block.glb")
+        self.dirtBlock = self.loader.loadModel("assets/dirt-block.glb")
+        self.stoneBlock = self.loader.loadModel("assets/stone-block.glb")
+        self.sandBlock = self.loader.loadModel("assets/sand-block.glb")
 
     def setupLights(self):
-        mainLight = DirectionalLight('main light')
+        mainLight = DirectionalLight("main light")
         mainLightNodePath = self.render.attachNewNode(mainLight)
         mainLightNodePath.setHpr(30, -60, 0)
         self.render.setLight(mainLightNodePath)
 
-        ambientLight = AmbientLight('ambient light')
+        ambientLight = AmbientLight("ambient light")
         ambientLight.setColor((0.3, 0.3, 0.3, 1))
         ambientLightNodePath = self.render.attachNewNode(ambientLight)
         self.render.setLight(ambientLightNodePath)
-    
+
+
 game = MyGame()
 game.run()
 game.cap.release()

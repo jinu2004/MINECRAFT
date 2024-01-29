@@ -15,6 +15,11 @@ class FaceMesh():
                                                 output_facial_transformation_matrixes=True,
                                                 num_faces=1)
         self.detector = vision.FaceLandmarker.create_from_options(self.options)
+        
+        self.x = 0
+        self.y = 0
+        self.z = 0
+
 
         
     def FaceDetector(self,cap):
@@ -23,11 +28,12 @@ class FaceMesh():
         z = 0
         success, self.image = cap.read()
         start = time.time()
+        self.image = cv2.resize(self.image,(1900,1080))
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
         self.image.flags.writeable = False
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=self.image)
-        face_landmarker_result = self.detector.detect(mp_image)
-        face_landmarks_list = face_landmarker_result.face_landmarks
+        self.face_landmarker_result = self.detector.detect(mp_image)
+        face_landmarks_list = self.face_landmarker_result.face_landmarks
         self.image.flags.writeable = True
         # self.image = cv2.resize(self.image,(650,400))
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
@@ -53,18 +59,34 @@ class FaceMesh():
           
             
             for idx, lm in enumerate(face_landmarks_proto.landmark):
-                if idx == 33 or idx == 263 or idx == 9 or idx == 61 or idx == 291 or idx == 199:
-                    if idx == 9:
+                if idx == 33 or idx == 263 or idx == 9 or idx == 61 or idx == 168 or idx == 199:
+                    if idx == 168:
                         nose_2d = (lm.x * img_w, lm.y * img_h)
                         nose_3d = (lm.x * img_w, lm.y * img_h, lm.z * 3000)
 
-                    tx, ty = int(lm.x * img_w), int(lm.y * img_h)
+                    tx, ty = (lm.x * img_w), (lm.y * img_h)
+                    xAvL = []
+                    yAvL = []
+                    xAvL.append(tx)
+                    yAvL.append(ty)
+                    
+                    if(len(xAvL)>5):
+                        xAvL = xAvL.pop(0)
+                    if(len(yAvL)>5):
+                        yAvL = yAvL.pop(0)
+                    if(xAvL and yAvL):   
+                        xAv = sum(xAvL)/len(xAvL)
+                        yAv = sum(yAvL)/len(yAvL)
+    
+                    
+                    
+                    
 
                     # Get the 2D Coordinates
-                    face_2d.append([tx, ty])
+                    face_2d.append([xAv, yAv])
 
                     # Get the 3D Coordinates
-                    face_3d.append([tx, ty, lm.z])       
+                    face_3d.append([xAv, yAv, lm.z])       
 
         # Convert it to the NumPy array
             face_2d = np.array(face_2d, dtype=np.float64)
@@ -98,13 +120,13 @@ class FaceMesh():
 
 
             # See where the user's head tilting
-            if y < -10:
+            if y < -2:
                 text = "Looking Left"
-            elif y > 10:
+            elif y > 2:
                 text = "Looking Right"
-            elif x < -10:
+            elif x < -2:
                 text = "Looking Down"
-            elif x > 10:
+            elif x > 2:
                 text = "Looking Up"
             else:
                 text = "Forward"
@@ -132,11 +154,17 @@ class FaceMesh():
 
         cv2.putText(self.image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow("window",self.image)
+        self.x = x
+        self.y = y
+        self.z = z
         
-        return x*3, y*3, z
-
-
         
+
+    def getFaceBlendShape(self):
+        return self.face_landmarker_result.face_blendshapes
+    
+    def getNosePose(self):
+        return self.x,self.y,self.z
 
 
 
