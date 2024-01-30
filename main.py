@@ -29,12 +29,12 @@ def degToRad(degrees):
 class MyGame(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-#check line 83 if the rotation is not good
+        # check line 83 if the rotation is not good
         self.selectedBlockType = "grass"
         self.cap = cv2.VideoCapture(0)
 
         self.faceMesh = FaceMesh()
-        
+
         self.rotate_speed = 15
         self.rotate_speedP = 15
 
@@ -86,50 +86,55 @@ class MyGame(ShowBase):
         # mannully adjust the constants according to our camera quality and screen resolution
         if y < -2:
             text = "Looking Left"
-            self.rotate_cameraH(direction=-1,dt=dt)
+            self.rotate_cameraH(direction=-1, dt=dt)
         elif y > 2:
             text = "Looking Right"
-            self.rotate_cameraH(direction=1,dt=dt)
+            self.rotate_cameraH(direction=1, dt=dt)
         elif x < -1.5:
             text = "Looking Down"
-            self.rotate_cameraP(-1,dt)
+            self.rotate_cameraP(-1, dt)
         elif x > 2.5:
             text = "Looking Up"
-            self.rotate_cameraP(1,dt)
+            self.rotate_cameraP(1, dt)
         else:
-            text = "Forward"       
-        
+            text = "Forward"
+
         face_landmarker_result = self.faceMesh.getFaceBlendShape()
-        if(face_landmarker_result):
+        if face_landmarker_result:
             for category in face_landmarker_result[0]:
-            # if (category.index == 9 and float(category.score) >= float(0.5)):
-            #   print(category)
-            # if (category.index == 10 and float(category.score) >= float(0.5)):
-            #   print(category)
+                # if (category.index == 9 and float(category.score) >= float(0.5)):
+                #   print(category)
+                # if (category.index == 10 and float(category.score) >= float(0.5)):
+                #   print(category)
                 last_execution_time_remove = 0
                 last_execution_time_place = 0
                 cooldown_period = 0.2
-                if (category.category_name == "browInnerUp" and float(category.score) >= float(0.7)):
+                if category.category_name == "browInnerUp" and float(
+                    category.score
+                ) >= float(0.7):
                     current_time = time.time()
                     if current_time - last_execution_time_remove >= cooldown_period:
                         self.removeBlock()
                         print(category)
                         last_execution_time_remove = current_time
-                if (category.category_name == "mouthPucker" and float(category.score) >= float(0.95)):
+                if (
+                    category.category_name == "browDownLeft"
+                    and float(category.score) >= float(0.4)
+                    or category.category_name == "browDownRight"
+                    and float(category.score) >= float(0.4)
+                ):
                     current_time = time.time()
                     if current_time - last_execution_time_place >= cooldown_period:
                         self.placeBlock()
                         print(category)
-                        last_execution_time_place= current_time
-            
-        
-        
+                        last_execution_time_place = current_time
+
         return task.cont
 
     def rotate_cameraH(self, direction, dt):
         angle = direction * self.rotate_speed * dt
         self.camera.setH(self.camera.getH() + angle)
-        
+
     def rotate_cameraP(self, direction, dt):
         angle = direction * self.rotate_speedP * dt
         self.camera.setP(self.camera.getP() + angle)

@@ -9,6 +9,11 @@ import time
 
 class FaceMesh():
     def __init__(self):
+        
+        # self.face_base_options = python.BaseOptions(model_asset_path='models/blaze_face_short_range.tflite')
+        # self.face_options = vision.FaceDetectorOptions(base_options=self.face_base_options)
+        # self.face_detector = vision.FaceDetector.create_from_options(self.face_options)
+        
         self.base_options = python.BaseOptions(model_asset_path='models/face_landmarker.task')
         self.options = vision.FaceLandmarkerOptions(base_options=self.base_options,
                                                 output_face_blendshapes=True,
@@ -56,7 +61,7 @@ class FaceMesh():
                                     connection_drawing_spec=mp.solutions.drawing_styles
                                     .get_default_face_mesh_tesselation_style())
 
-          
+        
             
             for idx, lm in enumerate(face_landmarks_proto.landmark):
                 if idx == 33 or idx == 263 or idx == 9 or idx == 61 or idx == 168 or idx == 199:

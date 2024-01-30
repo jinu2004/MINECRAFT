@@ -130,7 +130,7 @@ def plot_face_blendshapes_bar_graph(face_blendshapes):
           #   print(category)
           # if (category.index == 10 and float(category.score) >= float(0.5)):
           #   print(category)
-          if (category.category_name == "mouthFunnel" and float(category.score) >= float(0.4)):
+          if (category.category_name == "browDownLeft" and float(category.score) >= float(0.4)):
             print(category)
 
       
