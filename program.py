@@ -20,9 +20,9 @@ def main():
             print("Say a command:")
 
             try:
-                audio = recognizer.listen(source, timeout=4)
+                audio = recognizer.listen(source, timeout=2)
 
-                command = recognizer.recognize_google(audio).lower()
+                command = recognizer.recognize_google(audio)
                 
                 if "grass" in command:
                     start(command)
@@ -41,6 +41,8 @@ def main():
                 print("Could not understand audio. Try again.")
             except sr.RequestError as e:
                 print(f"Error connecting to Google Speech Recognition service: {e}")
+            except sr.WaitTimeoutError:
+                print("Listening timed out. No command detected.")
 
 if __name__ == "__main__":
     main()
