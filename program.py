@@ -24,7 +24,7 @@ def main():
 
                 command = recognizer.recognize_google(audio).lower()
                 
-                if "start" in command:
+                if "grass" in command:
                     start(command)
                 elif "stop" in command:
                     stop(command)

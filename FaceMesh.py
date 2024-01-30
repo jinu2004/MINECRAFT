@@ -9,7 +9,7 @@ import time
 
 class FaceMesh():
     def __init__(self):
-        self.base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
+        self.base_options = python.BaseOptions(model_asset_path='models/face_landmarker.task')
         self.options = vision.FaceLandmarkerOptions(base_options=self.base_options,
                                                 output_face_blendshapes=True,
                                                 output_facial_transformation_matrixes=True,
