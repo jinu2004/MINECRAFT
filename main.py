@@ -108,7 +108,7 @@ class MyGame(ShowBase):
                 #   print(category)
                 last_execution_time_remove = 0
                 last_execution_time_place = 0
-                cooldown_period = 0.2
+                cooldown_period = 3
                 if category.category_name == "browInnerUp" and float(
                     category.score
                 ) >= float(0.7):
@@ -117,17 +117,23 @@ class MyGame(ShowBase):
                         self.removeBlock()
                         print(category)
                         last_execution_time_remove = current_time
+
+                    else:
+                        print("wait")
+
                 if (
                     category.category_name == "browDownLeft"
-                    and float(category.score) >= float(0.4)
-                    or category.category_name == "browDownRight"
-                    and float(category.score) >= float(0.4)
+                    and category.score >= 0.4
+                    and category.category_name == "browDownLeft"
+                    and category.score >= 0.4
                 ):
                     current_time = time.time()
                     if current_time - last_execution_time_place >= cooldown_period:
                         self.placeBlock()
                         print(category)
                         last_execution_time_place = current_time
+                    else:
+                        print("wait")
 
         return task.cont
 
