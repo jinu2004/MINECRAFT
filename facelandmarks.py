@@ -119,28 +119,33 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 
   # fps = 1 / totalTime
   # #print("FPS: ", fps)
-  image = cv2.resize(image,(500,500))
+  # image = cv2.resize(image,(500,500))
 
   # cv2.putText(image, f'FPS: {int(fps)}', (20,450), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
   cv2.imshow("window",image)
 
 def plot_face_blendshapes_bar_graph(face_blendshapes):
         for category in face_blendshapes:
-          # if (category.index == 9 and float(category.score) >= float(0.5)):
-          #   print(category)
-          # if (category.index == 10 and float(category.score) >= float(0.5)):
-          #   print(category)
-          if (category.category_name == "browDownLeft" and float(category.score) >= float(0.4)):
-            print(category)
 
-      
+          # if (category.category_name == "eyeLookDownLeft" and float(category.score) >= float(0.4)):
+          #   print(category)
+          # if (category.category_name == "eyeLookDownRight" and float(category.score) >= float(0.4)):
+          #   print(category)
+          # if (category.category_name == "eyeLookUpLeft" and float(category.score) >= float(0.4)):
+          #   print(category)
+          # if (category.category_name == "eyeLookUpRight" and float(category.score) >= float(0.4)):
+          #   print(category)
+          if (category.category_name == "eyeLookInLeft" and float(category.score) >= float(0.4)):
+            print(category)
+          if (category.category_name == "eyeLookInRight" and float(category.score) >= float(0.4)):
+            print(category)      
         
       
 
 
 
 
-base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
+base_options = python.BaseOptions(model_asset_path='models/face_landmarker.task')
 
 options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        output_face_blendshapes=True,
@@ -153,7 +158,7 @@ cap = cv2.VideoCapture(0)
 while True:
     ret,img = cap.read()
     img = cv2.flip(img,1)
-    img = cv2.resize(img,(1900,1080))
+    # img = cv2.resize(img,(1900,1080))
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
     face_landmarker_result = detector.detect(mp_image)
     

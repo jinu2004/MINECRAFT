@@ -1,85 +1,44 @@
-import pyaudio
-from queue import Queue
-import subprocess
-import json
-from vosk import Model, KaldiRecognizer
-import time
-from threading import Thread
-
-
-
-# p = pyaudio.PyAudio()
-# for i in range(p.get_device_count()):
-#     print(p.get_device_info_by_index(i))
-
-# p.terminate()
-
-
-messages = Queue()
-recordings = Queue()
-CHANNELS = 2
-FRAME_RATE = 48000
-RECORD_SECONDS = 20
-AUDIO_FORMAT = pyaudio.paInt16
-SAMPLE_SIZE = 2
-
-model = Model(model_name="vosk-model-en-us-0.22")
-rec = KaldiRecognizer(model, FRAME_RATE)
-rec.SetWords(True)
-
-
-
-def record_microphone(chunk=1024):
-    p = pyaudio.PyAudio()
-
-    stream = p.open(format=AUDIO_FORMAT,
-                    channels=CHANNELS,
-                    rate=FRAME_RATE,
-                    input=True,
-                    input_device_index=6,
-                    frames_per_buffer=chunk)
-
-    frames = []
-
-    while not messages.empty():
-        data = stream.read(chunk)
-        frames.append(data)
-        if len(frames) >= (FRAME_RATE * RECORD_SECONDS) / chunk:
-            recordings.put(frames.copy())
-            frames = []
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    
-def speech_recognition():
-    
-    while not messages.empty():
-        frames = recordings.get()
-        
-        rec.AcceptWaveform(b''.join(frames))
-        result = rec.Result()
-        text = json.loads(result)["text"]
-        
-        cased = subprocess.check_output('python recasepunc/recasepunc.py predict recasepunc/checkpoint', shell=True, text=True, input=text)
-        # output.append_stdout(cased)
-        print(cased)
-        time.sleep(1)
-
-
-def start_recording():
-    messages.put(True)
-    print("Starting...")
-    record = Thread(target=record_microphone)
-    record.start()
-    transcribe = Thread(target=speech_recognition)
-    transcribe.start()
-
-def stop_recording():
-    with True:
-        messages.get()
-        print("Stopped.")
-        
-        
-start_recording()  
-     
+from operator import rshift
+import cv2 as cv 
+import numpy as np
+import mediapipe as mp 
+mp_face_mesh = mp.solutions.face_mesh
+LEFT_EYE =[ 362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385,384, 398 ]
+# right eyes indices
+RIGHT_EYE=[ 33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161 , 246 ] 
+LEFT_IRIS = [474,475, 476, 477]
+RIGHT_IRIS = [469, 470, 471, 472]
+cap = cv.VideoCapture(0)
+with mp_face_mesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+) as face_mesh:
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = cv.flip(frame, 1)
+        rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        img_h, img_w = frame.shape[:2]
+        results = face_mesh.process(rgb_frame)
+        if results.multi_face_landmarks:
+            # print(results.multi_face_landmarks[0].landmark)
+            mesh_points=np.array([np.multiply([p.x, p.y], [img_w, img_h]).astype(int) for p in results.multi_face_landmarks[0].landmark])
+            # print(mesh_points.shape)
+            # cv.polylines(frame, [mesh_points[LEFT_IRIS]], True, (0,255,0), 1, cv.LINE_AA)
+            # cv.polylines(frame, [mesh_points[RIGHT_IRIS]], True, (0,255,0), 1, cv.LINE_AA)
+            (l_cx, l_cy), l_radius = cv.minEnclosingCircle(mesh_points[LEFT_IRIS])
+            (r_cx, r_cy), r_radius = cv.minEnclosingCircle(mesh_points[RIGHT_IRIS])
+            center_left = np.array([l_cx, l_cy], dtype=np.int32)
+            center_right = np.array([r_cx, r_cy], dtype=np.int32)
+            cv.circle(frame, center_left, int(l_radius), (255,0,255), 1, cv.LINE_AA)
+            cv.circle(frame, center_right, int(r_radius), (255,0,255), 1, cv.LINE_AA)
+            
+        cv.imshow('img', frame)
+        key = cv.waitKey(1)
+        if key ==ord('q'):
+            break
+cap.release()
+cv.destroyAllWindows()

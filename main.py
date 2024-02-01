@@ -32,8 +32,11 @@ class MyGame(ShowBase):
         # check line 83 if the rotation is not good
         self.selectedBlockType = "grass"
         self.cap = cv2.VideoCapture(0)
+        self.movment = "Forward"
 
         self.faceMesh = FaceMesh()
+        self.remove_counter = 0
+        self.plcae_counter = 0
 
         self.rotate_speed = 15
         self.rotate_speedP = 15
@@ -51,7 +54,7 @@ class MyGame(ShowBase):
     def update(self, task):
         dt = globalClock.getDt()
 
-        playerMoveSpeed = 10
+        playerMoveSpeed = 1
 
         x_movement = 0
         y_movement = 0
@@ -82,58 +85,75 @@ class MyGame(ShowBase):
             self.camera.getZ() + z_movement,
         )
 
-        x, y, z = self.faceMesh.getNosePose()
+        x, y, z = self.faceMesh.FaceLandmarkesPos(9) 
+        text = ""
         # mannully adjust the constants according to our camera quality and screen resolution
-        if y < -2:
-            text = "Looking Left"
-            self.rotate_cameraH(direction=-1, dt=dt)
-        elif y > 2:
-            text = "Looking Right"
-            self.rotate_cameraH(direction=1, dt=dt)
-        elif x < -1.5:
-            text = "Looking Down"
-            self.rotate_cameraP(-1, dt)
-        elif x > 2.5:
-            text = "Looking Up"
-            self.rotate_cameraP(1, dt)
+        if y < -3:
+            self.movment = "Looking Left"
+            # self.rotate_cameraH(direction=-1, dt=dt)
+            self.updateKeyMap("left" , False)
+            self.updateKeyMap("right" , True)
+        elif y > 3:
+            self.movment = "Looking Right"
+            # self.rotate_cameraH(direction=1, dt=dt)
+            self.updateKeyMap("right" , False)
+            self.updateKeyMap("left" , True)
+        elif x < -3:
+            self.movment = "Looking Down"
+            # self.rotate_cameraP(-1, dt)
+            self.updateKeyMap("forward" , True)
+            self.updateKeyMap("backward" , False)
+        elif x > 3:
+            self.movment = "Looking Up"
+            # self.rotate_cameraP(1, dt)
+            self.updateKeyMap("forward" , False)
+            self.updateKeyMap("backward" , True)
         else:
             text = "Forward"
+            self.updateKeyMap("right" , False)
+            self.updateKeyMap("left" , False)
+            self.updateKeyMap("forward" , False)
+            self.updateKeyMap("backward" , False)
 
         face_landmarker_result = self.faceMesh.getFaceBlendShape()
         if face_landmarker_result:
             for category in face_landmarker_result[0]:
-                # if (category.index == 9 and float(category.score) >= float(0.5)):
-                #   print(category)
-                # if (category.index == 10 and float(category.score) >= float(0.5)):
-                #   print(category)
-                last_execution_time_remove = 0
-                last_execution_time_place = 0
-                cooldown_period = 3
-                if category.category_name == "browInnerUp" and float(
-                    category.score
-                ) >= float(0.7):
-                    current_time = time.time()
-                    if current_time - last_execution_time_remove >= cooldown_period:
-                        self.removeBlock()
-                        print(category)
-                        last_execution_time_remove = current_time
+                if (
+                    category.category_name == "browInnerUp"
+                    and float(category.score) >= float(0.7)
+                ) and self.remove_counter == 0:
+                    self.remove_counter = self.remove_counter + 1
 
-                    else:
-                        print("wait")
+                    self.removeBlock()
 
                 if (
-                    category.category_name == "browDownLeft"
-                    and category.score >= 0.4
-                    and category.category_name == "browDownLeft"
-                    and category.score >= 0.4
+                    category.category_name == "browleftUp"
+                    and category.score >= 0.3
+                    and self.plcae_counter == 0
                 ):
-                    current_time = time.time()
-                    if current_time - last_execution_time_place >= cooldown_period:
-                        self.placeBlock()
-                        print(category)
-                        last_execution_time_place = current_time
-                    else:
-                        print("wait")
+                    self.placeBlock()
+                    self.plcae_counter += 1
+
+         
+                  
+                    
+                    
+                    
+
+        if self.remove_counter != 0:
+            self.remove_counter = self.remove_counter + 1
+            print(self.remove_counter)
+            if self.remove_counter > 5:
+                self.remove_counter = 0
+
+        if self.plcae_counter != 0:
+            self.plcae_counter = self.plcae_counter + 1
+            print(self.plcae_counter)
+            if self.plcae_counter > 5:
+                self.plcae_counter = 0
+                
+                
+        self.faceMesh.drawResult()
 
         return task.cont
 
@@ -206,7 +226,7 @@ class MyGame(ShowBase):
             hitObject = hitNodePath.getPythonTag("owner")
             distanceFromPlayer = hitObject.getDistance(self.camera)
 
-            if distanceFromPlayer < 14:
+            if distanceFromPlayer < 14 and distanceFromPlayer > 3:
                 hitBlockPos = hitObject.getPos()
                 newBlockPos = hitBlockPos + normal * 2
                 self.createNewBlock(
@@ -266,11 +286,11 @@ class MyGame(ShowBase):
         skybox.reparentTo(self.render)
 
     def generateTerrain(self):
-        for z in range(10):
-            for y in range(20):
-                for x in range(20):
+        for z in range(20):
+            for y in range(30):
+                for x in range(30):
                     self.createNewBlock(
-                        x * 2 - 20, y * 2 - 20, -z * 2, "grass" if z == 0 else "dirt"
+                        x * 2 - 30, y * 2 - 30, -z * 2, "grass" if z == 0 else "dirt"
                     )
 
     def createNewBlock(self, x, y, z, type):
