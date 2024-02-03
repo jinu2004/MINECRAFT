@@ -151,6 +151,8 @@ class MyGame(ShowBase):
                 elif category.category_name == "mouthRight" and category.score >= 0.3 and self.movment == "Forward":
                     self.camera.setZ(self.camera.getZ() + dt*playerMoveSpeed)
                     
+                elif category.category_name == "mouthLeft" and category.score >= 0.3 and self.movment == "Forward"
+                    
                     
                     
                 else:
