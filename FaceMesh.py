@@ -10,10 +10,6 @@ import time
 
 class FaceMesh:
     def __init__(self):
-        # self.face_base_options = python.BaseOptions(model_asset_path='models/blaze_face_short_range.tflite')
-        # self.face_options = vision.FaceDetectorOptions(base_options=self.face_base_options)
-        # self.face_detector = vision.FaceDetector.create_from_options(self.face_options)
-
         self.base_options = python.BaseOptions(
             model_asset_path="models/face_landmarker.task"
         )
@@ -196,3 +192,8 @@ class FaceMesh:
     def drawResult(self):
         self.image = cv2.resize(self.image, (600, 500))
         cv2.imshow("result", self.image)
+        return self.image
+       
+        
+        
+    

@@ -13,7 +13,9 @@ from panda3d.core import (
     CollisionRay,
     CollisionHandlerQueue,
 )
-from panda3d.core import LVecBase3f
+from panda3d.core import Texture
+from panda3d.core import CardMaker
+from PIL import Image
 from direct.gui.OnscreenImage import OnscreenImage
 
 from FaceMesh import FaceMesh
@@ -54,7 +56,7 @@ class MyGame(ShowBase):
     def update(self, task):
         dt = globalClock.getDt()
 
-        playerMoveSpeed = 1
+        playerMoveSpeed = 2
 
         x_movement = 0
         y_movement = 0
@@ -85,35 +87,35 @@ class MyGame(ShowBase):
             self.camera.getZ() + z_movement,
         )
 
-        x, y, z = self.faceMesh.FaceLandmarkesPos(9) 
+        x, y, z = self.faceMesh.FaceLandmarkesPos(9)
         text = ""
         # mannully adjust the constants according to our camera quality and screen resolution
-        if y < -3:
+        if y < -2:
             self.movment = "Looking Left"
-            # self.rotate_cameraH(direction=-1, dt=dt)
-            self.updateKeyMap("left" , False)
-            self.updateKeyMap("right" , True)
-        elif y > 3:
+            self.rotate_cameraH(direction=-1, dt=dt)
+            # self.updateKeyMap("left", False)
+            # self.updateKeyMap("right", True)
+        elif y > 2:
             self.movment = "Looking Right"
-            # self.rotate_cameraH(direction=1, dt=dt)
-            self.updateKeyMap("right" , False)
-            self.updateKeyMap("left" , True)
-        elif x < -3:
+            self.rotate_cameraH(direction=1, dt=dt)
+            # self.updateKeyMap("right", False)
+            # self.updateKeyMap("left", True)
+        elif x < -2:
             self.movment = "Looking Down"
-            # self.rotate_cameraP(-1, dt)
-            self.updateKeyMap("forward" , True)
-            self.updateKeyMap("backward" , False)
-        elif x > 3:
+            self.rotate_cameraP(-1, dt)
+            # self.updateKeyMap("forward" , True)
+            # self.updateKeyMap("backward" , False)
+        elif x > 2:
             self.movment = "Looking Up"
-            # self.rotate_cameraP(1, dt)
-            self.updateKeyMap("forward" , False)
-            self.updateKeyMap("backward" , True)
+            self.rotate_cameraP(1, dt)
+            # self.updateKeyMap("forward" , False)
+            # self.updateKeyMap("backward" , True)
         else:
-            text = "Forward"
-            self.updateKeyMap("right" , False)
-            self.updateKeyMap("left" , False)
-            self.updateKeyMap("forward" , False)
-            self.updateKeyMap("backward" , False)
+            self.movment = "Forward"
+            self.updateKeyMap("right", False)
+            self.updateKeyMap("left", False)
+            self.updateKeyMap("forward", False)
+            self.updateKeyMap("backward", False)
 
         face_landmarker_result = self.faceMesh.getFaceBlendShape()
         if face_landmarker_result:
@@ -126,17 +128,40 @@ class MyGame(ShowBase):
 
                     self.removeBlock()
 
-                if (
-                    category.category_name == "browleftUp"
-                    and category.score >= 0.3
-                    and self.plcae_counter == 0
-                ):
+                elif (
+                    category.category_name == "mouthFunnel" and category.score >= 0.3
+                ) and self.plcae_counter == 0:
                     self.placeBlock()
                     self.plcae_counter += 1
 
-         
-                  
+                elif (
+                    category.category_name == "eyeLookInLeft" and category.score >= 0.3
+                ) and self.movment == "Forward":
+                    self.updateKeyMap("left", False)
+                    self.updateKeyMap("right", True)
+
+                elif (
+                    category.category_name == "eyeLookInRight" and category.score >= 0.3
+                ) and self.movment == "Forward":
+                        self.updateKeyMap("right", False)
+                        self.updateKeyMap("left", True)
+
+                elif category.category_name == "mouthLeft" and category.score >= 0.3 and self.movment == "Forward":
+                    self.camera.setZ(self.camera.getZ() - dt*playerMoveSpeed)
+                elif category.category_name == "mouthRight" and category.score >= 0.3 and self.movment == "Forward":
+                    self.camera.setZ(self.camera.getZ() + dt*playerMoveSpeed)
                     
+                    
+                    
+                else:
+                    self.updateKeyMap("down", False)
+                    self.updateKeyMap("up", False)
+                    self.updateKeyMap("left", False)
+                    self.updateKeyMap("right", False)
+                    
+                
+                    
+                
                     
                     
 
@@ -151,11 +176,25 @@ class MyGame(ShowBase):
             print(self.plcae_counter)
             if self.plcae_counter > 5:
                 self.plcae_counter = 0
-                
-                
-        self.faceMesh.drawResult()
 
+        self.faceMesh.drawResult()
         return task.cont
+
+    def imageRender(self):
+        image = self.faceMesh.drawResult()
+        pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        texture = Texture()
+        texture.setup2dTexture(
+            pil_image.width, pil_image.height, Texture.T_unsigned_byte, Texture.F_rgb
+        )
+        texture.setRamImage(pil_image.tobytes())
+        cm = CardMaker("plane")
+        plane = self.render2d.attachNewNode(cm.generate())
+        plane.setTexture(texture)
+        plane.reparentTo(self.render)
+        plane.setPos(1, 1, 1)
+        plane.setScale(1)
 
     def rotate_cameraH(self, direction, dt):
         angle = direction * self.rotate_speed * dt
